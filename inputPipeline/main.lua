@@ -12,6 +12,7 @@ function love.load()
         showRed = red,
         showGreen = green,
         showBlue = blue,
+        showGrey = reset,
     }
 
     -- keyboard bindings
@@ -22,8 +23,12 @@ function love.load()
         n = "showBlue",
     }
 
-    -- could have other functions in here
-    keysReleased = {}
+    keysReleased = {
+        r = "showGrey",
+        g = "showGrey",
+        b = "showGrey",
+        n = "showGrey",
+    }
 
     -- controller bindings
     buttons = {
@@ -32,8 +37,11 @@ function love.load()
         x = "showBlue",
     }
 
-    -- could have other functions in here
-    buttonsReleased = {}
+    buttonsReleased = {
+        b = "showGrey",
+        a = "showGrey",
+        x = "showGrey",
+    }
 end
 
 function love.update(dt)
@@ -101,4 +109,8 @@ end
 
 function blue()
     drawColours = {0, 0, 1, 1}
+end
+
+function reset()
+    drawColours = {0.5, 0.5, 0.5, 1}
 end
