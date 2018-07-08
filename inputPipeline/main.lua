@@ -5,10 +5,13 @@ to get them in my head]]
 function love.load()
     drawColours = {0.5, 0.5, 0.5, 1}
     
-    rectPos = {x=10, y=10}
+    wordsPos = {x=10, y=400}
 
-    test=""
+    test="hello world"
 
+    local joysticks = love.joystick.getJoysticks()
+    joystick = joysticks[1]
+ 
     gameStates = {}
 
     -- bind all controls for the colours gamestate
@@ -26,13 +29,12 @@ function love.load()
             r = "showRed",
             g = "showGreen",
             b = "showBlue",
-            n = "showBlue",
         },
+        keysDown = {},
         keysReleased = {
             r = "showGrey",
             g = "showGrey",
             b = "showGrey",
-            n = "showGrey",
             m = "toMovement",
         },
         -- controller bindings
@@ -42,57 +44,73 @@ function love.load()
             x = "showBlue",
             back = "toMovement",
         },
+        buttonsDown = {},
         buttonsReleased = {
             b = "showGrey",
             a = "showGrey",
             x = "showGrey",
-        }
+        },
+        --update = function(dt)
+
+        draw = function()
+            -- I assume there's a nicer way to pass an appropriate obj to a function...
+            love.graphics.setColor(
+                drawColours[1],
+                drawColours[2],
+                drawColours[3],
+                drawColours[4])
+        
+            love.graphics.rectangle('fill', 10, 10, 780, 285)
+        end
     }
 
     gameStates.movement = {
         bindings = {
-            moveUp = function() rectPos.y=rectPos.y-5 end,
-            moveDown = function() rectPos.y=rectPos.y+5 end,
-            moveLeft = function() rectPos.x=rectPos.x-5 end,
-            moveRight = function() rectPos.x=rectPos.x+5 end,
+            -- button pressed/released require no dt
             toColours = function() state = gameStates.colours end,
+
+            -- button down requires dt
+            moveUp = function() wordsPos.y=wordsPos.y-5 end,
+            moveDown = function() wordsPos.y=wordsPos.y+5 end,
+            moveLeft = function() wordsPos.x=wordsPos.x-5 end,
+            moveRight = function() wordsPos.x=wordsPos.x+5 end,
         },
-        keys = {
+        keys = {},
+        keysDown = {
             w = "moveUp",
             s = "moveDown",
             a = "moveLeft",
             d = "moveRight",
+        },
+        keysReleased = {
             c = "toColours",
         },
-        keysReleased = {},
-        buttons = {
+        buttons = {},
+        buttonsDown = {
             y = "moveUp",
             a = "moveDown",
             x = "moveLeft",
             b = "moveRight",
+        },
+        buttonsReleased = {
             back = "toColours",
         },
-        buttonsReleased = {}
+        draw = function()
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.print(test, wordsPos.x, wordsPos.y)
+        end
     }
 
     state = gameStates.colours
 end
 
-function love.update(dt)
-
+function love.update()
+    test="hello world"
+    checkInputsDown()
 end
-
+ 
 function love.draw()
-    -- I assume there's a nicer way to pass an appropriate obj to a function...
-    love.graphics.setColor(
-        drawColours[1],
-        drawColours[2],
-        drawColours[3],
-        drawColours[4])
-
-        love.graphics.rectangle('fill', rectPos.x,rectPos.y,780,285)
-        
-        love.graphics.print(test, 10, 400)
+    state.draw()
 end
 
 -- PROCESS INPUTS
@@ -104,14 +122,28 @@ function inputHandler(input)
     end
 end
 
-function love.keypressed(k)
-    local binding = state.keys[k]
-
-    test = k
-    if binding then
-        test = binding
+function checkInputsDown(dt)
+    -- Good way to pipe dt down and up?
+    for k,v in pairs(state.keysDown) do
+        if love.keyboard.isDown(k) then
+            inputDown(state.keysDown, k)
+        end
     end
 
+    for k,v in pairs(state.buttonsDown) do
+        if joystick and joystick:isGamepadDown(k) then
+            inputDown(state.buttonsDown, k)
+        end
+    end
+end
+
+function inputDown(array, input)
+    local binding = array[input]
+    return inputHandler(binding)
+end
+
+function love.keypressed(k)
+    local binding = state.keys[k]
     return inputHandler(binding)
 end
 
