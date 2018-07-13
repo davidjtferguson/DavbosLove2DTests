@@ -147,6 +147,11 @@ function love.keypressed(key, scancode, isrepeat)
 end
 
 function beginContact(body1, body2, contact)
+    -- check the contact created is actually touching
+    if not contact:isTouching() then
+        return
+    end
+
     for i in pairs(players) do
         players[i].onGround = players[i].body:isTouching(solids.ground.body)
     end
