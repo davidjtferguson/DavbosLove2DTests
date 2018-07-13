@@ -14,94 +14,10 @@ function love.load()
  
     gameStates = {}
 
-    -- bind all controls for the colours gamestate
-    gameStates.colours = {
-        -- bind to functions
-        bindings = {
-            showRed = red,
-            showGreen = green,
-            showBlue = blue,
-            showGrey = reset,
-            toMovement = function() state = gameStates.movement end,
-        },
-        -- keyboard bindings
-        keys = {
-            r = "showRed",
-            g = "showGreen",
-            b = "showBlue",
-        },
-        keysDown = {},
-        keysReleased = {
-            r = "showGrey",
-            g = "showGrey",
-            b = "showGrey",
-            m = "toMovement",
-        },
-        -- controller bindings
-        buttons = {
-            b = "showRed",
-            a = "showGreen",
-            x = "showBlue",
-            back = "toMovement",
-        },
-        buttonsDown = {},
-        buttonsReleased = {
-            b = "showGrey",
-            a = "showGrey",
-            x = "showGrey",
-        },
-        --update = function(dt)
+    gameStates.colourState = require "colourState"
+    gameStates.movementState = require "movementState"
 
-        draw = function()
-            -- I assume there's a nicer way to pass an appropriate obj to a function...
-            love.graphics.setColor(
-                drawColours[1],
-                drawColours[2],
-                drawColours[3],
-                drawColours[4])
-        
-            love.graphics.rectangle('fill', 10, 10, 780, 285)
-        end
-    }
-
-    gameStates.movement = {
-        bindings = {
-            -- button pressed/released require no dt
-            toColours = function() state = gameStates.colours end,
-
-            -- button down requires dt
-            moveUp = function() wordsPos.y=wordsPos.y-5 end,
-            moveDown = function() wordsPos.y=wordsPos.y+5 end,
-            moveLeft = function() wordsPos.x=wordsPos.x-5 end,
-            moveRight = function() wordsPos.x=wordsPos.x+5 end,
-        },
-        keys = {},
-        keysDown = {
-            w = "moveUp",
-            s = "moveDown",
-            a = "moveLeft",
-            d = "moveRight",
-        },
-        keysReleased = {
-            c = "toColours",
-        },
-        buttons = {},
-        buttonsDown = {
-            y = "moveUp",
-            a = "moveDown",
-            x = "moveLeft",
-            b = "moveRight",
-        },
-        buttonsReleased = {
-            back = "toColours",
-        },
-        draw = function()
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.print(test, wordsPos.x, wordsPos.y)
-        end
-    }
-
-    state = gameStates.colours
+    state = gameStates.colourState
 end
 
 function love.update()
@@ -124,6 +40,7 @@ end
 
 function checkInputsDown(dt)
     -- Good way to pipe dt down and up?
+    -- return bool then call function in each state?
     for k,v in pairs(state.keysDown) do
         if love.keyboard.isDown(k) then
             inputDown(state.keysDown, k)
@@ -163,6 +80,8 @@ function love.gamepadreleased(gamepad, button)
 end
 
 -- TEST FUNCTIONS
+
+-- should be part of colour state, but interesting I can call them here from colour state!!
 
 function red()
     drawColours = {1, 0, 0, 1}
