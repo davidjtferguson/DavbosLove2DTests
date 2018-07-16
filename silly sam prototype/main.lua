@@ -50,8 +50,7 @@ function love.load()
     sam.leftLeg.fixture:setFriction(0.5)
 
     -- join to chest
-    sam.leftLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.leftLeg.body,
-        spawn.x-20, spawn.y+25, true)
+    sam.leftLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.leftLeg.body, spawn.x-20, spawn.y+25)
 
     sam.leftLeg.onGround = false
     
@@ -62,15 +61,47 @@ function love.load()
     sam.rightLeg.fixture = love.physics.newFixture(sam.rightLeg.body, sam.rightLeg.shape, 3);
     sam.rightLeg.fixture:setFriction(0.5)
 
-    sam.rightLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.rightLeg.body,
-        spawn.x+20, spawn.y+25, true)
+    sam.rightLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.rightLeg.body, spawn.x+20, spawn.y+25)
 
     sam.rightLeg.onGround = false
     
+    -- head
+    sam.head = {}
+    sam.head.body = love.physics.newBody(world, spawn.x, spawn.y-45, "dynamic")
+    sam.head.shape = love.physics.newCircleShape(15)
+    sam.head.fixture = love.physics.newFixture(sam.head.body, sam.head.shape, 0.5);
+    sam.head.fixture:setFriction(0.5)
+
+    sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-25)
+
+    sam.head.onGround = false
+
+    sam.leftArm = {}
+    sam.leftArm.body = love.physics.newBody(world, spawn.x-30, spawn.y, "dynamic")
+    sam.leftArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 0.5);
+    sam.leftArm.fixture:setFriction(0.5)
+
+    sam.leftArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.leftArm.body, spawn.x-30, spawn.y-10)
+
+    sam.leftArm.onGround = false
+
+    sam.rightArm = {}
+    sam.rightArm.body = love.physics.newBody(world, spawn.x+30, spawn.y, "dynamic")
+    sam.rightArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 0.5);
+    sam.rightArm.fixture:setFriction(0.5)
+
+    sam.rightArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.rightArm.body, spawn.x+30, spawn.y-10)
+
+    sam.rightArm.onGround = false
+
     sam.parts = {
         sam.chest,
         sam.leftLeg,
         sam.rightLeg,
+        sam.leftArm,
+        sam.rightArm,
     }
 
     -- find controller
@@ -121,7 +152,7 @@ function moveLeft()
     if sam.leftLeg.onGround then
         forceUpLeg(sam.leftLeg)
 
-        sam.leftLeg.body:applyForce(-500, 0)
+        sam.leftLeg.body:applyForce(-1000, 0)
     end
 end
 
@@ -129,7 +160,7 @@ function moveRight()
     if sam.rightLeg.onGround then
         forceUpLeg(sam.rightLeg)
         
-        sam.rightLeg.body:applyForce(500, 0)
+        sam.rightLeg.body:applyForce(1000, 0)
     end
 end
 
@@ -203,6 +234,11 @@ function love.draw()
     for i in pairs(sam.parts) do
         love.graphics.polygon("fill", sam.parts[i].body:getWorldPoints(sam.parts[i].shape:getPoints()))
     end
+
+    love.graphics.setColor(0.80, 0.20, 0.20)
+
+    local wx, wy = sam.head.body:getWorldPoint(sam.head.shape:getPoint())
+    love.graphics.circle("fill", wx, wy, sam.head.shape:getRadius())
 
     if sam.leftLeg.onGround then
         love.graphics.print("true", 0, 0)
