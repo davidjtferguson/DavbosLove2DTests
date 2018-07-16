@@ -4,6 +4,8 @@ local function myStencilFunction()
     love.graphics.circle("fill", 300, 250, 100)
     love.graphics.circle("fill", 250, 200, 100)
     love.graphics.circle("fill", 250, 300, 100)
+	
+    image = love.graphics.newImage('point.png')
  end
   
  function love.draw()
@@ -25,5 +27,6 @@ local function myStencilFunction()
     love.graphics.translate(500, 100)
     local t = love.timer.getTime()
     love.graphics.shear(math.cos(t), math.cos(t * 1.3))
-    love.graphics.rectangle('fill', 0, 0, 100, 50)
+    --love.graphics.rectangle('fill', 0, 0, 100, 50)
+    love.graphics.draw(image,0,0)
  end
