@@ -29,7 +29,7 @@ function love.draw()
     state.draw()
 end
 
--- PROCESS INPUTS
+-- PROCESS INPUTS.. should all be in a state manager, not main
 
 function inputHandler(input)
     local action = state.bindings[input]
