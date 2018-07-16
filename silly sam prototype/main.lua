@@ -72,22 +72,96 @@ function love.load()
         sam.leftLeg,
         sam.rightLeg,
     }
+
+    -- find controller
+    local joysticks = love.joystick.getJoysticks()
+    joystick = joysticks[1]
+
+    -- state for input
+    state = {
+        bindings = {
+            left = moveLeft,
+            right = moveRight,
+        },
+        keysPressed = {
+            f = "left",
+            j = "right",
+        },
+        buttonsPressed = {
+            leftshoulder = "left",
+            rightshoulder = "right",
+        }
+    }
 end
 
 function love.update(dt)
     world:update(dt)
 end
 
-function love.keypressed(key, scancode, isrepeat)
-    if key == "f" and sam.leftLeg.onGround then
-        -- need some rotation maths to send force up up leg, not straight up
-        sam.rightLeg.body:applyForce(0, -5500)
+-- these 3 should be moved to a state manager of some kind
+function inputHandler(input)
+    local action = state.bindings[input]
+    if action then
+        return action()
     end
+end
 
-    if key == "j" and sam.rightLeg.onGround then
-        -- need some rotation maths to send force up up leg, not straight up
-        sam.leftLeg.body:applyForce(0, -5500)
+function love.keypressed(k)
+    local binding = state.keysPressed[k]
+    return inputHandler(binding)
+end
+
+function love.gamepadpressed(gamepad, button)
+    local binding = state.buttonsPressed[button]
+    return inputHandler(binding)
+end
+
+--consolidate both after figuring out applying force at rotation if poss
+function moveLeft()
+    if sam.leftLeg.onGround then
+        forceUpLeg(sam.leftLeg)
+
+        sam.leftLeg.body:applyForce(-500, 0)
     end
+end
+
+function moveRight()
+    if sam.rightLeg.onGround then
+        forceUpLeg(sam.rightLeg)
+        
+        sam.rightLeg.body:applyForce(500, 0)
+    end
+end
+
+function forceUpLeg(leg)
+
+        -- REPLACE after figuring out following sketch
+        leg.body:applyForce(0, -5500)
+
+		-- the impulse needs to always be acting up the edge of the box, on the corner of the box
+		-- so we need to find the impulse direction and the corner point of the object
+
+		-- calculate the object's rotation
+		--local angle = leg.body:getAngle();
+        
+        -- b2Rot rotation(angle);
+
+		-- rotate the impulse so it always acts along the side of the object 
+        --b2Vec2 impulse(0.0f, 1.0f);
+        
+        -- local impulse = {
+        --     x=(0*angle)*10000,
+        --     y=(1*angle)*-10000,
+        -- }
+
+		--impulse = b2Mul(rotation, impulse);
+
+		-- pass in (b2vec2 impulse being used, b2vec2 point where)
+		--leg.body:applyLinearImpulse(impulse.x, impulse.y);
+
+		-- extra push along the x-axis to get object moving and not hoping on the spot
+		--player_.chest_body()->ApplyForceToCenter(b2Vec2(-10.0f, 0.0f));
+        --sam.rightLeg.body:applyForce(0, -5500)
 end
 
 function beginContact(body1, body2, contact)
