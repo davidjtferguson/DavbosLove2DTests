@@ -44,8 +44,8 @@ function love.load()
 
     -- left leg
     sam.leftLeg = {}
-    sam.leftLeg.body = love.physics.newBody(world, spawn.x-25, spawn.y+45, "dynamic")
-    sam.leftLeg.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.leftLeg.body = love.physics.newBody(world, spawn.x-20, spawn.y+45, "dynamic")
+    sam.leftLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.leftLeg.fixture = love.physics.newFixture(sam.leftLeg.body, sam.leftLeg.shape, 3);
     sam.leftLeg.fixture:setFriction(0.5)
 
@@ -56,8 +56,8 @@ function love.load()
     
     -- right leg
     sam.rightLeg = {}
-    sam.rightLeg.body = love.physics.newBody(world, spawn.x+25, spawn.y+45, "dynamic")
-    sam.rightLeg.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.rightLeg.body = love.physics.newBody(world, spawn.x+20, spawn.y+45, "dynamic")
+    sam.rightLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.rightLeg.fixture = love.physics.newFixture(sam.rightLeg.body, sam.rightLeg.shape, 3);
     sam.rightLeg.fixture:setFriction(0.5)
 
@@ -165,34 +165,22 @@ function moveRight()
 end
 
 function forceUpLeg(leg)
+    -- the impulse needs to always be acting up the edge of the box, on the corner of the box
+    -- so we need to find the impulse direction and the corner point of the object
 
-        -- REPLACE after figuring out following sketch
-        leg.body:applyForce(0, -5500)
+    -- calculate the object's rotation
+    local angle = leg.body:getAngle();
+    
+    -- can I use this instead of manual? Can only seem to apply to graphics
+    --local rotateMatrix = love.math.newTransform(leg.body:getX(), leg.body:getY(), angle)
 
-		-- the impulse needs to always be acting up the edge of the box, on the corner of the box
-		-- so we need to find the impulse direction and the corner point of the object
+    local xImpulse = 0
+    local yImpulse = 100
 
-		-- calculate the object's rotation
-		--local angle = leg.body:getAngle();
-        
-        -- b2Rot rotation(angle);
+    local xResult = xImpulse*math.cos(angle) + yImpulse*math.sin(angle)
+    local yResult = xImpulse*math.sin(angle) + yImpulse*-math.cos(angle)
 
-		-- rotate the impulse so it always acts along the side of the object 
-        --b2Vec2 impulse(0.0f, 1.0f);
-        
-        -- local impulse = {
-        --     x=(0*angle)*10000,
-        --     y=(1*angle)*-10000,
-        -- }
-
-		--impulse = b2Mul(rotation, impulse);
-
-		-- pass in (b2vec2 impulse being used, b2vec2 point where)
-		--leg.body:applyLinearImpulse(impulse.x, impulse.y);
-
-		-- extra push along the x-axis to get object moving and not hoping on the spot
-		--player_.chest_body()->ApplyForceToCenter(b2Vec2(-10.0f, 0.0f));
-        --sam.rightLeg.body:applyForce(0, -5500)
+    leg.body:applyLinearImpulse(xResult, yResult);
 end
 
 function beginContact(body1, body2, contact)
