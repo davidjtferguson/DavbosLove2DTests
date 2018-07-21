@@ -1,11 +1,14 @@
 function love.load()
+    reset()
+end
 
+function reset()
     love.window.setMode(1000, 600, {fullscreen = false})
     love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
 
     love.physics.setMeter(100)
     world = love.physics.newWorld(0, 10*100, true)
-  
+
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 
     solids = {}
@@ -53,7 +56,7 @@ function love.load()
     sam.leftLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.leftLeg.body, spawn.x-20, spawn.y+25)
 
     sam.leftLeg.onGround = false
-    
+
     -- right leg
     sam.rightLeg = {}
     sam.rightLeg.body = love.physics.newBody(world, spawn.x+20, spawn.y+45, "dynamic")
@@ -64,7 +67,7 @@ function love.load()
     sam.rightLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.rightLeg.body, spawn.x+20, spawn.y+25)
 
     sam.rightLeg.onGround = false
-    
+
     -- head
     sam.head = {}
     sam.head.body = love.physics.newBody(world, spawn.x, spawn.y-45, "dynamic")
@@ -113,14 +116,17 @@ function love.load()
         bindings = {
             left = moveLeft,
             right = moveRight,
+            start = reset,
         },
         keysPressed = {
             f = "left",
             j = "right",
+            r = "start",
         },
         buttonsPressed = {
             leftshoulder = "left",
             rightshoulder = "right",
+            start = "start",
         }
     }
 end
