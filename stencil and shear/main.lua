@@ -9,6 +9,9 @@ local function myStencilFunction()
  end
   
  function love.draw()
+    
+    love.graphics.setColor( 1, 1, 1, 1 )
+
 	love.graphics.clear(0.2, 0.2, 0.5, 1)
  
     -- Each pixel touched by each circle will have its stencil value incremented by 1.
@@ -21,10 +24,25 @@ local function myStencilFunction()
     -- Draw a big rectangle.
     love.graphics.rectangle("fill", 0, 0, 500, 500)
   
-    love.graphics.setStencilTest()
+    love.graphics.setStencilTest("equal", 3)
+
+    love.graphics.setColor( 0.9, 0.1, 0.1, 0.8 )
 	
+    love.graphics.rectangle("fill", 0, 0, 500, 500)
+    
+    love.graphics.setStencilTest("equal", 4)
+
+    love.graphics.setColor( 0.1, 0.9, 0.1, 0.8 )
+	
+    love.graphics.rectangle("fill", 0, 0, 500, 500)
+    
+    love.graphics.setStencilTest()
+
+    love.graphics.setColor( 1, 1, 1, 1 )
+
 	-- draw something not stenciled (and also check out the shear function
     love.graphics.translate(500, 100)
+
     local t = love.timer.getTime()
     love.graphics.shear(math.cos(t), math.cos(t * 1.3))
     --love.graphics.rectangle('fill', 0, 0, 100, 50)

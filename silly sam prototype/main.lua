@@ -1,11 +1,14 @@
 function love.load()
+    reset()
+end
 
+function reset()
     love.window.setMode(1000, 600, {fullscreen = false})
     love.graphics.setBackgroundColor(0.41, 0.53, 0.97)
 
     love.physics.setMeter(100)
     world = love.physics.newWorld(0, 10*100, true)
-  
+
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 
     solids = {}
@@ -44,8 +47,8 @@ function love.load()
 
     -- left leg
     sam.leftLeg = {}
-    sam.leftLeg.body = love.physics.newBody(world, spawn.x-25, spawn.y+45, "dynamic")
-    sam.leftLeg.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.leftLeg.body = love.physics.newBody(world, spawn.x-20, spawn.y+45, "dynamic")
+    sam.leftLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.leftLeg.fixture = love.physics.newFixture(sam.leftLeg.body, sam.leftLeg.shape, 3);
     sam.leftLeg.fixture:setFriction(0.5)
 
@@ -53,18 +56,18 @@ function love.load()
     sam.leftLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.leftLeg.body, spawn.x-20, spawn.y+25)
 
     sam.leftLeg.onGround = false
-    
+
     -- right leg
     sam.rightLeg = {}
-    sam.rightLeg.body = love.physics.newBody(world, spawn.x+25, spawn.y+45, "dynamic")
-    sam.rightLeg.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.rightLeg.body = love.physics.newBody(world, spawn.x+20, spawn.y+45, "dynamic")
+    sam.rightLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.rightLeg.fixture = love.physics.newFixture(sam.rightLeg.body, sam.rightLeg.shape, 3);
     sam.rightLeg.fixture:setFriction(0.5)
 
     sam.rightLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.rightLeg.body, spawn.x+20, spawn.y+25)
 
     sam.rightLeg.onGround = false
-    
+
     -- head
     sam.head = {}
     sam.head.body = love.physics.newBody(world, spawn.x, spawn.y-45, "dynamic")
@@ -72,14 +75,14 @@ function love.load()
     sam.head.fixture = love.physics.newFixture(sam.head.body, sam.head.shape, 0.5);
     sam.head.fixture:setFriction(0.5)
 
-    sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-25)
+    sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-55)
 
     sam.head.onGround = false
 
     sam.leftArm = {}
     sam.leftArm.body = love.physics.newBody(world, spawn.x-30, spawn.y, "dynamic")
     sam.leftArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
-    sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 0.5);
+    sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 1);
     sam.leftArm.fixture:setFriction(0.5)
 
     sam.leftArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.leftArm.body, spawn.x-30, spawn.y-10)
@@ -89,7 +92,7 @@ function love.load()
     sam.rightArm = {}
     sam.rightArm.body = love.physics.newBody(world, spawn.x+30, spawn.y, "dynamic")
     sam.rightArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
-    sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 0.5);
+    sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 1);
     sam.rightArm.fixture:setFriction(0.5)
 
     sam.rightArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.rightArm.body, spawn.x+30, spawn.y-10)
@@ -113,20 +116,33 @@ function love.load()
         bindings = {
             left = moveLeft,
             right = moveRight,
+            start = reset,
         },
         keysPressed = {
             f = "left",
             j = "right",
+            r = "start",
         },
         buttonsPressed = {
             leftshoulder = "left",
             rightshoulder = "right",
+            start = "start",
         }
     }
 end
 
 function love.update(dt)
     world:update(dt)
+
+    armForces(dt);
+end
+
+function armForces(dt)
+    -- apply force to hands based on controller axis
+    local forceFactor = 100*dt
+    
+    sam.leftArm.body:applyLinearImpulse(joystick:getGamepadAxis("leftx")*forceFactor, joystick:getGamepadAxis("lefty")*forceFactor);
+    sam.rightArm.body:applyLinearImpulse(joystick:getGamepadAxis("rightx")*forceFactor, joystick:getGamepadAxis("righty")*forceFactor);
 end
 
 -- these 3 should be moved to a state manager of some kind
@@ -165,34 +181,19 @@ function moveRight()
 end
 
 function forceUpLeg(leg)
+    -- the impulse needs to always be acting up the edge of the box, on the corner of the box
+    -- so we need to find the impulse direction and the corner point of the object
+    leg.body:applyLinearImpulse(rotateImpulse(leg.body:getAngle(), 0, 100));
+end
 
-        -- REPLACE after figuring out following sketch
-        leg.body:applyForce(0, -5500)
+function rotateImpulse(angle, xImpulse, yImpulse)
+    -- can I use this instead of manual? Can only seem to apply to graphics
+    --local rotateMatrix = love.math.newTransform(leg.body:getX(), leg.body:getY(), angle)
 
-		-- the impulse needs to always be acting up the edge of the box, on the corner of the box
-		-- so we need to find the impulse direction and the corner point of the object
+    local xResult = xImpulse*math.cos(angle) + yImpulse*math.sin(angle)
+    local yResult = xImpulse*math.sin(angle) + yImpulse*-math.cos(angle)
 
-		-- calculate the object's rotation
-		--local angle = leg.body:getAngle();
-        
-        -- b2Rot rotation(angle);
-
-		-- rotate the impulse so it always acts along the side of the object 
-        --b2Vec2 impulse(0.0f, 1.0f);
-        
-        -- local impulse = {
-        --     x=(0*angle)*10000,
-        --     y=(1*angle)*-10000,
-        -- }
-
-		--impulse = b2Mul(rotation, impulse);
-
-		-- pass in (b2vec2 impulse being used, b2vec2 point where)
-		--leg.body:applyLinearImpulse(impulse.x, impulse.y);
-
-		-- extra push along the x-axis to get object moving and not hoping on the spot
-		--player_.chest_body()->ApplyForceToCenter(b2Vec2(-10.0f, 0.0f));
-        --sam.rightLeg.body:applyForce(0, -5500)
+    return xResult, yResult
 end
 
 function beginContact(body1, body2, contact)
