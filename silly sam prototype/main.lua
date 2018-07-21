@@ -72,14 +72,14 @@ function love.load()
     sam.head.fixture = love.physics.newFixture(sam.head.body, sam.head.shape, 0.5);
     sam.head.fixture:setFriction(0.5)
 
-    sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-25)
+    sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-55)
 
     sam.head.onGround = false
 
     sam.leftArm = {}
     sam.leftArm.body = love.physics.newBody(world, spawn.x-30, spawn.y, "dynamic")
     sam.leftArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
-    sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 0.5);
+    sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 1);
     sam.leftArm.fixture:setFriction(0.5)
 
     sam.leftArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.leftArm.body, spawn.x-30, spawn.y-10)
@@ -89,7 +89,7 @@ function love.load()
     sam.rightArm = {}
     sam.rightArm.body = love.physics.newBody(world, spawn.x+30, spawn.y, "dynamic")
     sam.rightArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
-    sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 0.5);
+    sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 1);
     sam.rightArm.fixture:setFriction(0.5)
 
     sam.rightArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.rightArm.body, spawn.x+30, spawn.y-10)
@@ -127,6 +127,16 @@ end
 
 function love.update(dt)
     world:update(dt)
+
+    armForces(dt);
+end
+
+function armForces(dt)
+    -- apply force to hands based on controller axis
+    local forceFactor = 100*dt
+    
+    sam.leftArm.body:applyLinearImpulse(joystick:getGamepadAxis("leftx")*forceFactor, joystick:getGamepadAxis("lefty")*forceFactor);
+    sam.rightArm.body:applyLinearImpulse(joystick:getGamepadAxis("rightx")*forceFactor, joystick:getGamepadAxis("righty")*forceFactor);
 end
 
 -- these 3 should be moved to a state manager of some kind
@@ -167,20 +177,17 @@ end
 function forceUpLeg(leg)
     -- the impulse needs to always be acting up the edge of the box, on the corner of the box
     -- so we need to find the impulse direction and the corner point of the object
+    leg.body:applyLinearImpulse(rotateImpulse(leg.body:getAngle(), 0, 100));
+end
 
-    -- calculate the object's rotation
-    local angle = leg.body:getAngle();
-    
+function rotateImpulse(angle, xImpulse, yImpulse)
     -- can I use this instead of manual? Can only seem to apply to graphics
     --local rotateMatrix = love.math.newTransform(leg.body:getX(), leg.body:getY(), angle)
-
-    local xImpulse = 0
-    local yImpulse = 100
 
     local xResult = xImpulse*math.cos(angle) + yImpulse*math.sin(angle)
     local yResult = xImpulse*math.sin(angle) + yImpulse*-math.cos(angle)
 
-    leg.body:applyLinearImpulse(xResult, yResult);
+    return xResult, yResult
 end
 
 function beginContact(body1, body2, contact)
