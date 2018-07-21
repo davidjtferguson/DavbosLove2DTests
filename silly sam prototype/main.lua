@@ -18,16 +18,19 @@ function reset()
     solids.ground.shape = love.physics.newRectangleShape(0, 0, 800, 50)
     solids.ground.fixture = love.physics.newFixture(solids.ground.body, solids.ground.shape);
     solids.ground.fixture:setFriction(0.9)
+    --solids.ground.fixture:setMask(2)
 
     solids.leftWall = {}
     solids.leftWall.body = love.physics.newBody(world, 1000/2, 600-500/2)
     solids.leftWall.shape = love.physics.newRectangleShape(-425, 0, 50, 500)
     solids.leftWall.fixture = love.physics.newFixture(solids.leftWall.body, solids.leftWall.shape);
+    --solids.leftWall.fixture:setMask(2)
 
     solids.rightWall = {}
     solids.rightWall.body = love.physics.newBody(world, 1000/2, 600-500/2)
     solids.rightWall.shape = love.physics.newRectangleShape(400, 0, 50, 500)
     solids.rightWall.fixture = love.physics.newFixture(solids.rightWall.body, solids.rightWall.shape);
+    --solids.rightWall.fixture:setMask(2)
 
     local spawn = {
         x=1000/2,
@@ -42,6 +45,8 @@ function reset()
     sam.chest.shape = love.physics.newRectangleShape(0, 0, 50, 50)
     sam.chest.fixture = love.physics.newFixture(sam.chest.body, sam.chest.shape);
     sam.chest.fixture:setFriction(0.5)
+    sam.chest.color = {1, 1, 1}
+
 
     sam.chest.onGround = false
 
@@ -51,6 +56,7 @@ function reset()
     sam.leftLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.leftLeg.fixture = love.physics.newFixture(sam.leftLeg.body, sam.leftLeg.shape, 3);
     sam.leftLeg.fixture:setFriction(0.5)
+    sam.leftLeg.color = {0.1, 0.4, 1}
 
     -- join to chest
     sam.leftLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.leftLeg.body, spawn.x-20, spawn.y+25)
@@ -63,6 +69,7 @@ function reset()
     sam.rightLeg.shape = love.physics.newRectangleShape(0, 0, 17, 40)
     sam.rightLeg.fixture = love.physics.newFixture(sam.rightLeg.body, sam.rightLeg.shape, 3);
     sam.rightLeg.fixture:setFriction(0.5)
+    sam.rightLeg.color = {0.7, 0.1, 0.1}
 
     sam.rightLeg.joint = love.physics.newWeldJoint(sam.chest.body, sam.rightLeg.body, spawn.x+20, spawn.y+25)
 
@@ -74,6 +81,8 @@ function reset()
     sam.head.shape = love.physics.newCircleShape(15)
     sam.head.fixture = love.physics.newFixture(sam.head.body, sam.head.shape, 0.5);
     sam.head.fixture:setFriction(0.5)
+    --sam.head.fixture:setMask(3)
+    sam.head.color = {0.80, 0.20, 0.20}
 
     sam.head.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.head.body, spawn.x, spawn.y-55)
 
@@ -81,9 +90,11 @@ function reset()
 
     sam.leftArm = {}
     sam.leftArm.body = love.physics.newBody(world, spawn.x-30, spawn.y, "dynamic")
-    sam.leftArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.leftArm.shape = love.physics.newRectangleShape(0, 0, 20, 35)
     sam.leftArm.fixture = love.physics.newFixture(sam.leftArm.body, sam.leftArm.shape, 1);
+    --sam.leftArm.fixture:setMask(1)
     sam.leftArm.fixture:setFriction(0.5)
+    sam.leftArm.color = {0.1, 0.4, 1}
 
     sam.leftArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.leftArm.body, spawn.x-30, spawn.y-10)
 
@@ -91,9 +102,11 @@ function reset()
 
     sam.rightArm = {}
     sam.rightArm.body = love.physics.newBody(world, spawn.x+30, spawn.y, "dynamic")
-    sam.rightArm.shape = love.physics.newRectangleShape(0, 0, 20, 40)
+    sam.rightArm.shape = love.physics.newRectangleShape(0, 0, 20, 35)
     sam.rightArm.fixture = love.physics.newFixture(sam.rightArm.body, sam.rightArm.shape, 1);
+    --sam.rightArm.fixture:setMask(1)
     sam.rightArm.fixture:setFriction(0.5)
+    sam.rightArm.color = {0.7, 0.1, 0.1}
 
     sam.rightArm.joint = love.physics.newRevoluteJoint(sam.chest.body, sam.rightArm.body, spawn.x+30, spawn.y-10)
 
@@ -129,20 +142,46 @@ function reset()
             start = "start",
         }
     }
+
+    test = ''
 end
 
 function love.update(dt)
     world:update(dt)
 
-    armForces(dt);
+    armForces(dt, sam.leftArm, "leftx", "lefty");
+    armForces(dt, sam.rightArm, "rightx", "righty");
 end
 
-function armForces(dt)
+function armForces(dt, arm, xaxis, yaxis)
     -- apply force to hands based on controller axis
-    local forceFactor = 100*dt
-    
-    sam.leftArm.body:applyLinearImpulse(joystick:getGamepadAxis("leftx")*forceFactor, joystick:getGamepadAxis("lefty")*forceFactor);
-    sam.rightArm.body:applyLinearImpulse(joystick:getGamepadAxis("rightx")*forceFactor, joystick:getGamepadAxis("righty")*forceFactor);
+    local forceFactor = 200*dt
+
+    local xfactor = joystick:getGamepadAxis(xaxis)
+
+    if math.abs(xfactor) < 0.2 then
+        xfactor = 0
+    end
+
+    local yfactor = joystick:getGamepadAxis(yaxis)
+
+    if math.abs(yfactor) < 0.2 then
+        yfactor = 0
+    end
+
+    if arm.body:isTouching(solids.ground.body) then
+        forceFactor = 4000*dt
+        xfactor = 0
+    end
+
+    test = xfactor
+
+    local angle = arm.body:getAngle()
+
+    local xmove = arm.body:getX() + math.cos(angle) * 20
+    local ymove = arm.body:getY() + math.sin(angle) * 20
+
+    arm.body:applyLinearImpulse(xfactor*forceFactor, yfactor*forceFactor, xmove, ymove);
 end
 
 -- these 3 should be moved to a state manager of some kind
@@ -197,6 +236,7 @@ function rotateImpulse(angle, xImpulse, yImpulse)
 end
 
 function beginContact(body1, body2, contact)
+
     -- check the contact created is actually touching
     if not contact:isTouching() then
         return
@@ -233,17 +273,18 @@ function love.draw()
     love.graphics.setColor(0.20, 0.20, 0.20)
 
     for i in pairs(sam.parts) do
+        love.graphics.setColor(getColor(sam.parts[i]))
         love.graphics.polygon("fill", sam.parts[i].body:getWorldPoints(sam.parts[i].shape:getPoints()))
     end
 
-    love.graphics.setColor(0.80, 0.20, 0.20)
+    love.graphics.setColor(sam.head.color)
 
     local wx, wy = sam.head.body:getWorldPoint(sam.head.shape:getPoint())
     love.graphics.circle("fill", wx, wy, sam.head.shape:getRadius())
 
-    if sam.leftLeg.onGround then
-        love.graphics.print("true", 0, 0)
-    else
-        love.graphics.print("false", 0, 0)
-    end
+    love.graphics.print(test, 0, 0)
+end
+
+function getColor(obj)
+ return obj.color[1], obj.color[2], obj.color[3]
 end
