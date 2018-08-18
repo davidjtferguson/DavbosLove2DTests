@@ -3,7 +3,7 @@ local sti = require "sti/sti"
 
 function love.load()
     -- Load map file
-    map = sti("testMap2.lua")
+    map = sti("testMap3.lua")
 
     
     -- Create new dynamic data layer called "Sprites" as the 8th layer
