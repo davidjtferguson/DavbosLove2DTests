@@ -11,7 +11,6 @@ function love.load(args)
     PI = 3.14
 end
 
- 
 function love.draw()
 
     -- normalised from 0 to PI... how do I normalise from -PI to PI?
@@ -27,13 +26,21 @@ function love.draw()
     print(time)
 
     shader:send("time", time)
+
+    squarex = 500
+    squarey = 300
+    squarewidth = 100
+    squareheight = 100
+
+    shader:send("squareCentre", { squarex + (squarewidth/2), squarey + (squareheight/2) })
+
     love.graphics.setShader(shader)
 
     -- draw things
-    love.graphics.rectangle( "fill", 500, 400, 100, 100 )
+    love.graphics.rectangle( "fill", squarex, squarey, squarewidth, squareheight )
 
     love.graphics.setShader()
     -- draw more things
     
-    love.graphics.rectangle( "fill", 100, 400, 100, 100 )
+    love.graphics.rectangle( "fill", 100, 300, 100, 100 )
 end
