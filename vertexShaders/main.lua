@@ -30,10 +30,10 @@ function love.draw()
     love.graphics.setShader(shader)
 
     -- draw things
-    love.graphics.rectangle( "fill", 100, 100, 100, 100 )
+    love.graphics.rectangle( "fill", 500, 400, 100, 100 )
 
     love.graphics.setShader()
     -- draw more things
     
-    love.graphics.rectangle( "fill", 100, 100, 100, 100 )
+    love.graphics.rectangle( "fill", 100, 400, 100, 100 )
 end
